@@ -1,0 +1,300 @@
+:root {
+    --bg-color: #f4f4f4;
+    --text-color: #333;
+    --cell-bg: #fff;
+    --cell-border: #ddd;
+    --cell-hover: #e0e0e0;
+    --found-word: #27ae60;
+    --incorrect: #e74c3c;
+    --correct: #4CAF50;
+    --selected: #d4edda;
+    --timer-bg: #ecf0f1;
+    --timer-border: #34495e;
+    --modal-bg: #fefefe;
+    --button-bg: #3498db;
+    --button-hover: #2980b9;
+}
+
+.dark-mode {
+    --bg-color: #1a1a1a;
+    --text-color: #f0f0f0;
+    --cell-bg: #2d2d2d;
+    --cell-border: #444;
+    --cell-hover: #3d3d3d;
+    --timer-bg: #2c3e50;
+    --timer-border: #ecf0f1;
+    --modal-bg: #333;
+    --button-bg: #2980b9;
+    --button-hover: #3498db;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+h2, h3 {
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    background-color: var(--cell-bg);
+}
+
+td {
+    border: 1px solid var(--cell-border);
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+td:hover {
+    background-color: var(--cell-hover);
+    transform: scale(1.05);
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+li {
+    background-color: var(--button-bg);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+li.found {
+    background-color: var(--found-word);
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+td.found {
+    background-color: var(--correct);
+    color: white;
+}
+
+td.incorrect {
+    background-color: var(--incorrect);
+    color: white;
+}
+
+td.selected {
+    background-color: var(--selected);
+    color: var(--text-color);
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+.shake {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Estilos del reloj circular */
+#timer-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 30px;
+}
+
+#timer-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+#timer-circle {
+    fill: none;
+    stroke: var(--timer-border);
+    stroke-width: 6;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
+}
+
+#timer-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.timer-warning #timer-circle {
+    stroke: #e74c3c;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { stroke-width: 6; }
+    100% { stroke-width: 10; }
+}
+
+@keyframes rotate {
+    0% { transform: rotate(-90deg); }
+    100% { transform: rotate(270deg); }
+}
+
+.timer-animation #timer-svg {
+    animation: rotate 60s linear infinite;
+}
+
+/* Estilos para el modal */
+.modal {
+    display: flex;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--modal-bg);
+    margin: auto;
+    padding: 30px;
+    border: 1px solid var(--cell-border);
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content h2 {
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.modal-content p {
+    font-size: 1.1em;
+    color: var(--text-color);
+    margin: 10px 0;
+}
+
+.modal-content input[type="text"] {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--cell-border);
+    border-radius: 5px;
+    font-size: 1em;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--cell-bg);
+    color: var(--text-color);
+}
+
+.modal-content button {
+    background-color: var(--button-bg);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.modal-content button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Botón de modo oscuro/claro */
+#theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+#theme-toggle:hover {
+    background-color: var(--button-hover);
+    transform: scale(1.1);
+}
+
+/* Estadísticas del juego */
+.stats {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--button-bg);
+}
+
+.stat-label {
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.8;
+}

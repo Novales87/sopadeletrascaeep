@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sopa de Letras CAEEP</title>
+    <meta name="description" content="Juego de Sopa de Letras interactivo con temporizador y modo oscuro.">
+    <meta name="keywords" content="sopa de letras, juego, HTML, CSS, JavaScript, interactivo, CAEP">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button id="theme-toggle">🌓</button>
+
+    <div id="welcomeModal" class="modal">
+        <div class="modal-content">
+            <h2>Bienvenido a la actividad del CAEEP</h2>
+            <p>Ingresa tu nombre y apellido para comenzar:</p>
+            <input type="text" id="userName" placeholder="Nombre" required>
+            <input type="text" id="userLastName" placeholder="Apellido" required>
+            <button id="startButton">Comenzar</button>
+        </div>
+    </div>
+
+    <div id="endGameModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 id="endGameTitle"></h2>
+            <p id="finalMessage"></p>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="timeStat">0s</span>
+                    <span class="stat-label">Tiempo</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="wordsFoundStat">0/4</span>
+                    <span class="stat-label">Palabras</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="attemptsStat">0</span>
+                    <span class="stat-label">Intentos</span>
+                </div>
+            </div>
+            
+            <button id="playAgainButton">Jugar de nuevo</button>
+            <p style="font-size: 0.8em; color: var(--text-color); opacity: 0.7;">Desarrollado por Sebastián Novales</p>
+        </div>
+    </div>
+
+    <h2>Sopa de Letras</h2>
+    
+    <div id="timer-container">
+        <svg id="timer-svg" viewBox="0 0 100 100">
+            <circle id="timer-circle" cx="50" cy="50" r="45" />
+        </svg>
+        <div id="timer-text">60</div>
+    </div>
+    
+    <table>
+        <tr>
+            <td>A</td><td>L</td><td>U</td><td>M</td><td>I</td><td>N</td><td>I</td><td>O</td><td>X</td><td>Q</td>
+        </tr>
+        <tr>
+            <td>W</td><td>V</td><td>G</td><td>J</td><td>K</td><td>R</td><td>Y</td><td>U</td><td>F</td><td>O</td>
+        </tr>
+        <tr>
+            <td>I</td><td>M</td><td>E</td><td>I</td><td>P</td><td>H</td><td>G</td><td>H</td><td>J</td><td>S</td>
+        </tr>
+        <tr>
+            <td>S</td><td>I</td><td>M</td><td>B</td><td>U</td><td>F</td><td>R</td><td>A</td><td>V</td><td>Y</td>
+        </tr>
+        <tr>
+            <td>R</td><td>Q</td><td>H</td><td>O</td><td>V</td><td>W</td><td>J</td><td>O</td><td>Q</td><td>D</td>
+        </tr>
+        <tr>
+            <td>A</td><td>L</td><td>F</td><td>G</td><td>H</td><td>J</td><td>K</td><td>L</td><td>M</td><td>N</td>
+        </tr>
+        <tr>
+            <td>P</td><td>V</td><td>Q</td><td>R</td><td>T</td><td>U</td><td>V</td><td>W</td><td>X</td><td>Y</td>
+        </tr>
+        <tr>
+            <td>Z</td><td>Y</td><td>I</td><td>W</td><td>V</td><td>U</td><td>T</td><td>S</td><td>R</td><td>Q</td>
+        </tr>
+        <tr>
+            <td>P</td><td>O</td><td>P</td><td>O</td><td>R</td><td>S</td><td>T</td><td>U</td><td>V</td><td>W</td>
+        </tr>
+        <tr>
+            <td>X</td><td>Y</td><td>Z</td><td>A</td><td>N</td><td>B</td><td>D</td><td>E</td><td>F</td><td>G</td>
+        </tr>
+    </table>
+    <h3>Palabras a encontrar:</h3>
+    <ul>
+        <li data-word="ALUMINIO">ALUMINIO</li>
+        <li data-word="IMEI">IMEI</li>
+        <li data-word="SIM">SIM</li>
+        <li data-word="AVION">AVION</li>
+    </ul>
+
+    <script>
+        // Elementos del DOM
+        const table = document.querySelector('table');
+        const cells = document.querySelectorAll('td');
+        const wordListItems = document.querySelectorAll('li');
+        const timerText = document.getElementById('timer-text');
+        const timerContainer = document.getElementById('timer-container');
+        const timerCircle = document.getElementById('timer-circle');
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        // Modal elements
+        const welcomeModal = document.getElementById('welcomeModal');
+        const startButton = document.getElementById('startButton');
+        const userNameInput = document.getElementById('userName');
+        const userLastNameInput = document.getElementById('userLastName');
+        const endGameModal = document.getElementById('endGameModal');
+        const endGameTitle = document.getElementById('endGameTitle');
+        const finalMessage = document.getElementById('finalMessage');
+        const playAgainButton = document.getElementById('playAgainButton');
+        
+        // Stats elements
+        const timeStat = document.getElementById('timeStat');
+        const wordsFoundStat = document.getElementById('wordsFoundStat');
+        const attemptsStat = document.getElementById('attemptsStat');
+
+        // Variables del juego
+        let selectedCells = [];
+        let foundWords = new Set();
+        let timeLeft = 60;
+        let timerInterval;
+        let timerStarted = false;
+        let startTime;
+        let userName = '';
+        let userLastName = '';
+        let incorrectAttempts = 0;
+        let totalAttempts = 0;
+        const totalWords = 4;
+
+        // Definición de las palabras y sus posiciones
+        const words = {
+            "ALUMINIO": [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7]],
+            "IMEI": [[2,0],[2,1],[2,2],[2,3]],
+            "SIM": [[3,0],[3,1],[3,2]],
+            "AVION": [[5,0],[6,1],[7,2],[8,3],[9,4]]
+        };
+
+        // Configuración inicial del círculo del temporizador
+        const circumference = 2 * Math.PI * 45;
+        timerCircle.style.strokeDasharray = circumference;
+        timerCircle.style.strokeDashoffset = 0;
+
+        // Deshabilitar interacción con el juego al inicio
+        function disableGameInteraction() {
+            cells.forEach(cell => {
+                cell.style.pointerEvents = 'none';
+            });
+        }
+
+        // Habilitar interacción con el juego
+        function enableGameInteraction() {
+            cells.forEach(cell => {
+                cell.style.pointerEvents = 'auto';
+            });
+        }
+
+        // Iniciar el temporizador
+        function startTimer() {
+            if (timerStarted) return;
+            timerStarted = true;
+            startTime = Date.now();
+            
+            // Activar animación del círculo
+            timerContainer.classList.add('timer-animation');
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerText.textContent = timeLeft;
+                
+                // Actualizar círculo del temporizador
+                const offset = circumference - (timeLeft / 60) * circumference;
+                timerCircle.style.strokeDashoffset = offset;
+
+                if (timeLeft <= 10) {
+                    timerContainer.classList.add('timer-warning');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        // Finalizar el juego
+        function endGame(won) {
+            clearInterval(timerInterval);
+            
+            // Detener animación del círculo
+            timerContainer.classList.remove('timer-animation', 'timer-warning');
+            
+            // Deshabilitar todas las celdas
+            cells.forEach(cell => {
+                cell.style.pointerEvents = 'none';
+            });
+
+            // Calcular tiempo transcurrido
+            const endTime = Date.now();
+            const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
+            
+            // Actualizar estadísticas
+            timeStat.textContent = `${timeTaken}s`;
+            wordsFoundStat.textContent = `${foundWords.size}/${totalWords}`;
+            attemptsStat.textContent = totalAttempts;
+
+            if (won) {
+                endGameTitle.textContent = '¡Felicidades!';
+                finalMessage.innerHTML = `¡Felicidades, <strong>${userName} ${userLastName}</strong>!<br>Encontraste todas las palabras en <strong>${timeTaken} segundos</strong>.`;
+                finalMessage.style.color = 'var(--found-word)';
+            } else {
+                endGameTitle.textContent = '¡Juego Terminado!';
+                
+                if (foundWords.size > 0) {
+                    finalMessage.innerHTML = `¡Tiempo agotado!<br>Encontraste <strong>${foundWords.size} de ${totalWords}</strong> palabras.<br>Intentos fallidos: <strong>${incorrectAttempts}</strong>`;
+                } else {
+                    finalMessage.innerHTML = '¡Tiempo agotado! No lograste encontrar ninguna palabra.';
+                }
+                
+                finalMessage.style.color = 'var(--incorrect)';
+            }
+            
+            endGameModal.style.display = 'flex';
+        }
+
+        // Verificar si la selección actual coincide con alguna palabra
+        function checkWordMatch() {
+            const selectedText = selectedCells.map(cell => cell.textContent).join('');
+            totalAttempts++;
+            
+            // Verificar si la selección coincide con alguna palabra
+            if (words[selectedText] && !foundWords.has(selectedText)) {
+                // Verificar si las celdas seleccionadas coinciden con las posiciones de la palabra
+                const expectedPositions = words[selectedText];
+                const selectedPositions = selectedCells.map(cell => {
+                    const row = cell.parentNode.rowIndex;
+                    const col = cell.cellIndex;
+                    return [row, col];
+                });
+                
+                // Convertir a strings para comparación fácil
+                const expectedStr = expectedPositions.map(pos => pos.join(',')).sort().join(';');
+                const selectedStr = selectedPositions.map(pos => pos.join(',')).sort().join(';');
+                
+                if (expectedStr === selectedStr) {
+                    // Palabra encontrada correctamente
+                    foundWords.add(selectedText);
+                    
+                    // Marcar celdas como encontradas
+                    selectedCells.forEach(cell => {
+                        cell.classList.remove('selected');
+                        cell.classList.add('found');
+                    });
+                    
+                    // Marcar palabra en la lista
+                    const wordItem = document.querySelector(`li[data-word="${selectedText}"]`);
+                    if (wordItem) {
+                        wordItem.classList.add('found');
+                    }
+                    
+                    // Actualizar estadísticas
+                    wordsFoundStat.textContent = `${foundWords.size}/${totalWords}`;
+                    
+                    // Limpiar selección
+                    selectedCells = [];
+                    
+                    // Verificar si se encontraron todas las palabras
+                    if (foundWords.size === totalWords) {
+                        endGame(true);
+                    }
+                    
+                    return;
+                }
+            }
+            
+            // Si la selección no es un prefijo de ninguna palabra, marcar como incorrecta
+            const isPrefix = Object.keys(words).some(word => 
+                word.startsWith(selectedText) && !foundWords.has(word)
+            );
+            
+            if (!isPrefix && selectedCells.length > 0) {
+                incorrectAttempts++;
+                
+                // Animación de vibración
+                table.classList.add('shake');
+                setTimeout(() => {
+                    table.classList.remove('shake');
+                }, 400);
+                
+                // Marcar celdas como incorrectas temporalmente
+                selectedCells.forEach(cell => {
+                    cell.classList.add('incorrect');
+                    setTimeout(() => {
+                        cell.classList.remove('incorrect', 'selected');
+                    }, 500);
+                });
+                
+                // Limpiar selección
+                selectedCells = [];
+                
+                // Actualizar estadísticas
+                attemptsStat.textContent = totalAttempts;
+            }
+        }
+
+        // Event listeners para las celdas
+        cells.forEach(cell => {
+            cell.addEventListener('click', () => {
+                // Iniciar el temporizador en el primer clic
+                if (!timerStarted) {
+                    startTimer();
+                }
+
+                // Si la celda ya está seleccionada o encontrada, no hacer nada
+                if (cell.classList.contains('selected') || cell.classList.contains('found')) {
+                    return;
+                }
+
+                // Si la celda está en una selección incorrecta previa, limpiar
+                if (cell.classList.contains('incorrect')) {
+                    return;
+                }
+
+                // Añadir celda a la selección
+                cell.classList.add('selected');
+                selectedCells.push(cell);
+                
+                // Verificar si la selección actual coincide con alguna palabra
+                checkWordMatch();
+            });
+        });
+
+        // Event listener para el botón de inicio
+        startButton.addEventListener('click', () => {
+            userName = userNameInput.value.trim();
+            userLastName = userLastNameInput.value.trim();
+
+            if (userName && userLastName) {
+                welcomeModal.style.display = 'none';
+                enableGameInteraction();
+            } else {
+                alert('Por favor, ingresa tu nombre y apellido.');
+            }
+        });
+
+        // Event listener para el botón de jugar de nuevo
+        playAgainButton.addEventListener('click', () => {
+            location.reload();
+        });
+
+        // Event listener para el botón de tema oscuro/claro
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            
+            // Cambiar icono según el modo
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.textContent = '☀️';
+            } else {
+                themeToggle.textContent = '🌓';
+            }
+        });
+
+        // Inicialización
+        disableGameInteraction();
+    </script>
+    <footer>
+        <p style="text-align: center; font-size: 0.9em; color: var(--text-color); opacity: 0.8; margin-top: 30px;">Desarrollado por Sebastián Novales</p>
+    </footer>
+</body>
+</html>
