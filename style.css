@@ -33,7 +33,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+            justify-content: flex-start;
     min-height: 100vh;
     margin: 0;
     background-color: var(--bg-color);
@@ -54,6 +54,64 @@ table {
     overflow: hidden;
     margin-bottom: 30px;
     background-color: var(--cell-bg);
+}
+
+@media (max-width: 1200px) { /* Cambiado a 1200px para una prueba más amplia */
+    .word-search-table {
+        width: 85% !important; /* Ocupar casi todo el ancho disponible */
+        max-width: none !important; /* Eliminar cualquier límite de ancho máximo */
+    }
+    td {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 29px !important;
+    }
+
+    li {
+        font-size: 23px !important;
+        padding: 10px 20px !important;
+    }
+
+    #timer-container {
+        width: 130px !important;
+        height: 130px !important;
+    }
+
+    #timer-text {
+        font-size: 2.6em !important;
+    }
+
+    .modal-content {
+        width: 100% !important; /* Mantener el 90% para que ocupe más espacio en móvil */
+        padding: 50px !important;
+        margin: 20% !important; /* Eliminar margen automático */
+    }
+
+    .modal-content h2 {
+        font-size: 4em !important;
+    }
+
+    .modal-content p {
+        font-size: 2em !important;
+    }
+
+    .modal-content input[type="text"] {
+        padding: 18px !important; /* 10px * 1.3 = 13px */
+        font-size: 2.3em !important; /* 1em * 1.3 = 1.3em */
+    }
+
+    .modal-content button {
+        padding: 16px 26px !important;
+        font-size: 2.4em !important;
+    }
+
+    #theme-toggle {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 26px !important;
+        top: 15px !important; /* Ajustar posición para que no quede tan pegado */
+        right: 15px !important; /* Ajustar posición para que no quede tan pegado */
+    }
 }
 
 td {
@@ -191,7 +249,7 @@ td.selected {
     overflow: auto;
     background-color: rgba(0,0,0,0.6);
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Cambiado a flex-start para moverlo hacia arriba */
 }
 
 .modal-content {
@@ -297,4 +355,61 @@ td.selected {
     font-size: 0.9em;
     color: var(--text-color);
     opacity: 0.8;
+}
+
+@media (max-width: 600px) {
+    td {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 29px !important;
+    }
+
+    li {
+        font-size: 23px !important;
+        padding: 10px 20px !important;
+    }
+
+    #timer-container {
+        width: 130px !important;
+        height: 130px !important;
+    }
+
+    #timer-text {
+        font-size: 2.6em !important;
+    }
+
+    .modal-content {
+        width: 90% !important; /* Mantener el 90% para que ocupe más espacio en móvil */
+        padding: 40px !important;
+        position: absolute !important; /* Asegurar posicionamiento absoluto */
+        top: 10% !important; /* Moverlo al 10% desde la parte superior */
+        transform: translateY(0) !important; /* Anular cualquier transformación de centrado */
+        margin: 0 auto !important; /* Mantener centrado horizontalmente */
+    }
+
+    .modal-content h2 {
+        font-size: 2em !important;
+    }
+
+    .modal-content p {
+        font-size: 1.4em !important;
+    }
+
+    .modal-content input[type="text"] {
+        padding: 13px !important; /* 10px * 1.3 = 13px */
+        font-size: 1.3em !important; /* 1em * 1.3 = 1.3em */
+    }
+
+    .modal-content button {
+        padding: 16px 26px !important;
+        font-size: 1.4em !important;
+    }
+
+    #theme-toggle {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 26px !important;
+        top: 15px !important; /* Ajustar posición para que no quede tan pegado */
+        right: 15px !important; /* Ajustar posición para que no quede tan pegado */
+    }
 }
