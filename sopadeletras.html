@@ -323,10 +323,6 @@
             
             <div class="stats">
                 <div class="stat-item">
-                    <span class="stat-value" id="timeStat">0s</span>
-                    <span class="stat-label">Tiempo</span>
-                </div>
-                <div class="stat-item">
                     <span class="stat-value" id="wordsFoundStat">0/4</span>
                     <span class="stat-label">Palabras</span>
                 </div>
@@ -337,6 +333,14 @@
             </div>
             
             <button id="playAgainButton">Jugar de nuevo</button>
+        </div>
+    </div>
+
+    <div id="definitionModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 id="definitionWord"></h2>
+            <p id="definitionText"></p>
+            <button id="closeDefinitionModal">Cerrar</button>
         </div>
     </div>
 
@@ -351,16 +355,16 @@
     
     <table>
         <tr>
-            <td>A</td><td>L</td><td>U</td><td>M</td><td>I</td><td>N</td><td>I</td><td>O</td><td>X</td><td>Q</td>
+            <td>A</td><td>L</td><td>U</td><td>M</td><td>I</td><td>N</td><td>I</td><td>O</td><td>X</td><td>C</td>
         </tr>
         <tr>
-            <td>W</td><td>V</td><td>G</td><td>J</td><td>K</td><td>R</td><td>Y</td><td>U</td><td>F</td><td>O</td>
+            <td>W</td><td>V</td><td>G</td><td>J</td><td>K</td><td>R</td><td>Y</td><td>U</td><td>I</td><td>O</td>
         </tr>
         <tr>
-            <td>I</td><td>M</td><td>E</td><td>I</td><td>P</td><td>H</td><td>G</td><td>H</td><td>J</td><td>S</td>
+            <td>I</td><td>M</td><td>E</td><td>I</td><td>P</td><td>H</td><td>G</td><td>A</td><td>J</td><td>S</td>
         </tr>
         <tr>
-            <td>S</td><td>I</td><td>M</td><td>B</td><td>U</td><td>F</td><td>R</td><td>A</td><td>V</td><td>Y</td>
+            <td>D</td><td>E</td><td>F</td><td>B</td><td>U</td><td>F</td><td>V</td><td>A</td><td>V</td><td>Y</td>
         </tr>
         <tr>
             <td>R</td><td>Q</td><td>H</td><td>O</td><td>V</td><td>W</td><td>J</td><td>O</td><td>Q</td><td>D</td>
@@ -375,7 +379,7 @@
             <td>Z</td><td>Y</td><td>I</td><td>W</td><td>V</td><td>U</td><td>T</td><td>S</td><td>R</td><td>Q</td>
         </tr>
         <tr>
-            <td>P</td><td>O</td><td>P</td><td>O</td><td>R</td><td>S</td><td>T</td><td>U</td><td>V</td><td>W</td>
+            <td>S</td><td>I</td><td>M</td><td>O</td><td>R</td><td>S</td><td>T</td><td>U</td><td>V</td><td>W</td>
         </tr>
         <tr>
             <td>X</td><td>Y</td><td>Z</td><td>A</td><td>N</td><td>B</td><td>D</td><td>E</td><td>F</td><td>G</td>
@@ -387,6 +391,7 @@
         <li data-word="IMEI">IMEI</li>
         <li data-word="SIM">SIM</li>
         <li data-word="AVION">AVION</li>
+        <li data-word="VAIC">VAIC</li>
     </ul>
 
     <script>
@@ -409,8 +414,13 @@
         const finalMessage = document.getElementById('finalMessage');
         const playAgainButton = document.getElementById('playAgainButton');
         
+        // Modal de definición
+        const definitionModal = document.getElementById('definitionModal');
+        const definitionWord = document.getElementById('definitionWord');
+        const definitionText = document.getElementById('definitionText');
+        const closeDefinitionModalButton = document.getElementById('closeDefinitionModal');
+
         // Stats elements
-        const timeStat = document.getElementById('timeStat');
         const wordsFoundStat = document.getElementById('wordsFoundStat');
         const attemptsStat = document.getElementById('attemptsStat');
 
@@ -419,20 +429,32 @@
         let foundWords = new Set();
         let timeLeft = 60;
         let timerInterval;
-        let timerStarted = false;
+        let timerStarted = false; // Indica si el temporizador se ha iniciado alguna vez
+        let timerRunning = false; // Indica si el temporizador está actualmente en marcha
         let startTime;
         let userName = '';
         let userLastName = '';
         let incorrectAttempts = 0;
         let totalAttempts = 0;
-        const totalWords = 4;
+        const totalWords = 5;
+        let lastWordFound = false; // Para controlar si la última palabra fue encontrada
 
         // Definición de las palabras y sus posiciones
         const words = {
             "ALUMINIO": [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7]],
             "IMEI": [[2,0],[2,1],[2,2],[2,3]],
-            "SIM": [[3,0],[3,1],[3,2]],
-            "AVION": [[5,0],[6,1],[7,2],[8,3],[9,4]]
+            "SIM": [[8,0],[8,1],[8,2]],
+            "AVION": [[5,0],[6,1],[7,2],[8,3],[9,4]],
+            "VAIC": [[0,9],[1,8],[2,7],[3,6]]
+        };
+
+        // Definiciones de las palabras
+        const wordDefinitions = {
+            "IMEI": "Es un número único de 15 dígitos que tiene cada celular. Sirve para identificar el equipo en todo el mundo y dice de qué marca y modelo es.",
+            "AVION": "Es una opción que apaga todas las conexiones del celular (como Wi-Fi, datos, Bluetooth y GPS), pero te deja usar cosas como la cámara o la agenda. Se usa para evitar que alguien acceda al celular de forma remota.",
+            "SIM": "Es una tarjeta que va dentro del celular y guarda tu línea. Gracias a ella, puedes cambiar de teléfono sin perder tu número ni tu conexión. Es lo que le dice a la red quién eres.<br><br>La <strong>SIM (tarjeta inteligente)</strong> es la que le da identidad a tu línea de celular. Guarda de forma segura datos importantes como tu número, tu plan y una clave única que permite que la red te reconozca.<br><br>Es desmontable, lo que significa que puedes sacarla y ponerla en otro teléfono para seguir usando tu misma línea, sin cambiar de número ni de compañía (si es compatible).<br><br>En las redes GSM (la mayoría de los celulares actuales), la SIM es obligatoria, porque es ella —y no el celular— la que representa tu línea. Sin SIM, el teléfono no puede conectarse a la red ni hacer llamadas, enviar mensajes o usar datos móviles.",
+            "ALUMINIO": "Al envolver un celular con varias capas de papel aluminio, creamos lo que se llama una <strong>caja de Faraday</strong>. Esto bloquea todas las señales: el celular no puede enviar ni recibir llamadas, mensajes, Wi-Fi, ni GPS.<br><br>La <strong>caja de Faraday (o jaula de Faraday)</strong> es como un escudo hecho de metal que impide que entren o salgan ondas. Así protegemos el dispositivo y evitamos que alguien lo controle a distancia.",
+            "VAIC": "Es una herramienta que se usa en investigaciones para analizar llamadas telefónicas. Permite ver si hay contacto entre personas, encontrar patrones y descubrir vínculos entre ellas.<br><br>El <strong>VAIC</strong> ayuda a cruzar miles de datos y ver conexiones que, a simple vista, podrían pasar desapercibidas. Es clave en casos donde se investiga si alguien se comunicó con otro."
         };
 
         // Configuración inicial del círculo del temporizador
@@ -454,15 +476,16 @@
             });
         }
 
-        // Iniciar el temporizador
+        // Iniciar o reanudar el temporizador
         function startTimer() {
-            if (timerStarted) return;
-            timerStarted = true;
-            startTime = Date.now();
+            if (timerRunning) return; // Si ya está corriendo, no hacer nada
+            timerRunning = true;
+            if (!timerStarted) { // Solo la primera vez que se inicia el juego
+                timerStarted = true;
+                startTime = Date.now();
+                timerContainer.classList.add('timer-animation');
+            }
             
-            // Activar animación del círculo
-            timerContainer.classList.add('timer-animation');
-
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerText.textContent = timeLeft;
@@ -477,14 +500,21 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    timerRunning = false;
                     endGame(false);
                 }
             }, 1000);
         }
 
+        // Pausar el temporizador
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+        }
+
         // Finalizar el juego
         function endGame(won) {
-            clearInterval(timerInterval);
+            pauseTimer(); // Asegurarse de que el temporizador esté detenido
             
             // Detener animación del círculo
             timerContainer.classList.remove('timer-animation', 'timer-warning');
@@ -494,18 +524,17 @@
                 cell.style.pointerEvents = 'none';
             });
 
-            // Calcular tiempo transcurrido
+            // Calcular tiempo transcurrido (aunque no se muestre, puede ser útil para depuración o futuras métricas)
             const endTime = Date.now();
             const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
             
             // Actualizar estadísticas
-            timeStat.textContent = `${timeTaken}s`;
             wordsFoundStat.textContent = `${foundWords.size}/${totalWords}`;
             attemptsStat.textContent = totalAttempts;
 
             if (won) {
                 endGameTitle.textContent = '¡Felicidades!';
-                finalMessage.innerHTML = `¡Felicidades, <strong>${userName} ${userLastName}</strong>!<br>Encontraste todas las palabras en <strong>${timeTaken} segundos</strong>.`;
+                finalMessage.innerHTML = `¡Felicidades, <strong>${userName} ${userLastName}</strong>!<br>Encontraste todas las palabras.`;
                 finalMessage.style.color = 'var(--found-word)';
             } else {
                 endGameTitle.textContent = '¡Juego Terminado!';
@@ -565,8 +594,15 @@
                     
                     // Verificar si se encontraron todas las palabras
                     if (foundWords.size === totalWords) {
-                        endGame(true);
+                        lastWordFound = true; // Marcar que la última palabra fue encontrada
                     }
+                    
+                    // Mostrar modal de definición
+                    pauseTimer(); // Pausar el temporizador
+                    disableGameInteraction(); // Deshabilitar interacción con el juego
+                    definitionWord.textContent = selectedText;
+                    definitionText.innerHTML = wordDefinitions[selectedText]; // Cambiado a innerHTML
+                    definitionModal.style.display = 'flex';
                     
                     return;
                 }
@@ -606,7 +642,7 @@
         cells.forEach(cell => {
             cell.addEventListener('click', () => {
                 // Iniciar el temporizador en el primer clic
-                if (!timerStarted) {
+                if (!timerStarted) { // Usar timerStarted para el primer clic
                     startTimer();
                 }
 
@@ -637,6 +673,7 @@
             if (userName && userLastName) {
                 welcomeModal.style.display = 'none';
                 enableGameInteraction();
+                startTimer(); // Iniciar el temporizador cuando el juego realmente comienza
             } else {
                 alert('Por favor, ingresa tu nombre y apellido.');
             }
@@ -659,8 +696,19 @@
             }
         });
 
+        // Event listener para el botón de cerrar el modal de definición
+        closeDefinitionModalButton.addEventListener('click', () => {
+            definitionModal.style.display = 'none';
+            enableGameInteraction(); // Habilitar interacción con el juego
+            if (lastWordFound) { // Si la última palabra fue encontrada, terminar el juego
+                endGame(true);
+            } else {
+                startTimer(); // Reanudar el temporizador si no es la última palabra
+            }
+        });
+
         // Inicialización
         disableGameInteraction();
-    </script>
+</script>
 </body>
 </html>
