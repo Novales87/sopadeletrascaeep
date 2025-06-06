@@ -303,8 +303,8 @@
         }
     </style>
 </head>
-<body>
-    <button id="theme-toggle">🌓</button>
+<body class="dark-mode">
+    <button id="theme-toggle">☀️</button>
 
     <div id="welcomeModal" class="modal">
         <div class="modal-content">
@@ -709,6 +709,12 @@
 
         // Inicialización
         disableGameInteraction();
-</script>
+        // Asegurarse de que el icono del tema sea el correcto al cargar
+        if (document.body.classList.contains('dark-mode')) {
+            themeToggle.textContent = '☀️';
+        } else {
+            themeToggle.textContent = '🌓';
+        }
+    </script>
 </body>
 </html>
